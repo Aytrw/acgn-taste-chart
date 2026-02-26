@@ -128,38 +128,44 @@
         .cover-modal-inner {
             background: #fff;
             border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            max-width: 820px;
-            max-height: 80vh;
-            overflow-y: auto;
-            width: 90%;
+            border-radius: 10px;
+            padding: 18px 20px;
+            max-width: 960px;
+            max-height: 92vh;
+            overflow: hidden;
+            width: 94%;
             box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
         }
         .cover-modal-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             color: #333;
             text-align: center;
+            flex-shrink: 0;
         }
         .cover-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             gap: 8px;
+            padding: 4px 6px;
         }
         .cover-item {
             position: relative;
             overflow: hidden;
             cursor: pointer;
             border: 2px solid #ddd;
-            transition: all 0.2s;
             aspect-ratio: 3/4;
+            border-radius: 4px;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
         }
         .cover-item:hover {
             border-color: #ea4c89;
-            box-shadow: 0 0 8px rgba(234,76,137,0.35);
-            transform: scale(1.04);
+            box-shadow: 0 0 10px rgba(234,76,137,0.35);
+            transform: scale(1.03);
+            z-index: 1;
         }
         .cover-item img {
             width: 100%;
@@ -172,6 +178,7 @@
             justify-content: center;
             gap: 10px;
             margin-top: 14px;
+            flex-shrink: 0;
         }
         .cover-modal-btn {
             padding: 7px 24px;
@@ -200,17 +207,17 @@
             display: flex;
             justify-content: flex-end;
             gap: 6px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .cover-tool-btn {
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 5px 14px;
+            padding: 4px 12px;
             border: 1.5px solid #ddd;
             border-radius: 6px;
             background: #fff;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
             color: #555;
             cursor: pointer;
@@ -224,8 +231,9 @@
         .modal-tabs {
             display: flex;
             gap: 0;
-            margin-bottom: 14px;
+            margin-bottom: 10px;
             border-bottom: 2px solid #eee;
+            flex-shrink: 0;
         }
         .modal-tab {
             flex: 1;
@@ -246,7 +254,18 @@
             border-bottom-color: #ea4c89;
         }
         .tab-panel { display: none; }
-        .tab-panel.active { display: block; }
+        .tab-panel.active {
+            display: block;
+            flex: 1 1 auto;
+            overflow-y: auto;
+            overflow-x: hidden;
+            min-height: 0;
+            padding-right: 6px;
+        }
+        .tab-panel.active::-webkit-scrollbar { width: 6px; }
+        .tab-panel.active::-webkit-scrollbar-track { background: transparent; }
+        .tab-panel.active::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+        .tab-panel.active::-webkit-scrollbar-thumb:hover { background: #ccc; }
 
         /* 搜索面板（占位，后续迁移） */
         .search-bar {
@@ -290,21 +309,20 @@
 
         .search-results {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 8px;
         }
         .search-item {
             cursor: pointer;
             border: 2px solid #eee;
             border-radius: 6px;
             overflow: hidden;
-            transition: all 0.2s;
+            transition: border-color 0.15s, box-shadow 0.15s;
             background: #fff;
         }
         .search-item:hover {
             border-color: #ea4c89;
-            box-shadow: 0 2px 12px rgba(234,76,137,0.2);
-            transform: translateY(-2px);
+            box-shadow: 0 2px 10px rgba(234,76,137,0.2);
         }
         .search-item-img {
             width: 100%;
@@ -314,10 +332,10 @@
             background: #f5f5f5;
         }
         .search-item-info {
-            padding: 6px 8px;
+            padding: 4px 6px 2px;
         }
         .search-item-name {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
             color: #333;
             line-height: 1.3;
@@ -327,7 +345,7 @@
             overflow: hidden;
         }
         .search-item-sub {
-            font-size: 11px;
+            font-size: 10px;
             color: #999;
             margin-top: 2px;
             white-space: nowrap;
@@ -336,9 +354,16 @@
         }
         .search-status {
             text-align: center;
-            padding: 30px 20px;
-            color: #999;
+            padding: 36px 20px;
+            color: #aaa;
             font-size: 13px;
+            line-height: 1.8;
+        }
+        .search-status-icon {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 8px;
+            opacity: 0.5;
         }
         .search-status .spinner {
             display: inline-block;
@@ -414,7 +439,7 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            padding: 2px 8px 6px;
+            padding: 1px 6px 4px;
         }
         .search-item-type {
             font-size: 10px;
@@ -491,25 +516,92 @@
         /* 数据源选择 */
         .source-selector-row {
             display: flex;
-            gap: 6px;
-            margin-bottom: 12px;
+            gap: 10px;
+            margin-bottom: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .source-btn-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
         }
         .source-btn {
-            padding: 5px 18px;
+            padding: 7px 22px;
             border: 2px solid #ddd;
-            border-radius: 16px;
+            border-radius: 18px;
             background: #fff;
             font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             color: #555;
-            transition: all 0.15s;
+            transition: all 0.2s;
         }
-        .source-btn:hover { border-color: #ea4c89; color: #ea4c89; }
+        .source-btn:hover { border-color: #ea4c89; color: #ea4c89; background: #fff5f8; }
         .source-btn.active {
             background: #ea4c89;
             border-color: #ea4c89;
             color: #fff;
+            box-shadow: 0 2px 8px rgba(234,76,137,0.25);
+        }
+        .source-desc {
+            font-size: 10px;
+            color: #b0b0b0;
+            white-space: nowrap;
+            transition: color 0.15s;
+        }
+        .source-btn-wrap:has(.source-btn.active) .source-desc {
+            color: #e06090;
+        }
+
+        /* 面板区块标题 */
+        .section-label {
+            font-size: 12px;
+            color: #888;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .section-label::before {
+            content: '';
+            width: 3px;
+            height: 13px;
+            background: #ea4c89;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .section-label .section-hint {
+            font-weight: 400;
+            color: #bbb;
+            margin-left: 2px;
+        }
+
+        /* VNDB 引导提示 */
+        .vndb-guide {
+            background: linear-gradient(135deg, #f8f0ff 0%, #f0f4ff 100%);
+            border: 1px solid #e8dff5;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .vndb-guide-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            line-height: 1.4;
+        }
+        .vndb-guide-text {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.7;
+        }
+        .vndb-guide-text strong {
+            color: #7b1fa2;
         }
 
         /* 分页 */
@@ -541,11 +633,11 @@
 
         /* 标签浏览器 */
         .tag-browser {
-            max-height: 200px;
+            max-height: 220px;
             overflow-y: auto;
             border: 1px solid #eee;
-            border-radius: 6px;
-            padding: 8px 10px;
+            border-radius: 8px;
+            padding: 10px 12px;
             background: #fafafa;
             margin-bottom: 10px;
         }
@@ -560,10 +652,10 @@
         .tag-cat-row:last-child { margin-bottom: 0; }
         .tag-cat-label {
             font-size: 11px;
-            color: #aaa;
+            color: #999;
             white-space: nowrap;
             padding-top: 4px;
-            min-width: 48px;
+            min-width: 36px;
             font-weight: bold;
         }
         .tag-cat-group {
@@ -905,36 +997,55 @@
             <!-- 搜索作品 -->
             <div class="tab-panel" id="tabSearch">
                 <!-- 数据源选择 -->
+                <div class="section-label">选择数据来源</div>
                 <div class="source-selector-row">
-                    <button class="source-btn active" data-source="bgm" onclick="setSource('bgm')">📺 Bangumi</button>
-                    <button class="source-btn" data-source="vndb" onclick="setSource('vndb')">🎮 VNDB</button>
+                    <div class="source-btn-wrap">
+                        <button class="source-btn active" data-source="bgm" onclick="setSource('bgm')"
+                            title="Bangumi 番组计划 — 综合性 ACGN 信息站，收录动画、漫画、游戏、音乐、轻小说等条目，拥有丰富的标签和评分体系">📺 Bangumi</button>
+                        <span class="source-desc">动画 / 漫画 / 游戏 / 小说</span>
+                    </div>
+                    <div class="source-btn-wrap">
+                        <button class="source-btn" data-source="vndb" onclick="setSource('vndb')"
+                            title="VNDB (The Visual Novel Database) — 全球最大的视觉小说数据库，专注收录 Galgame 与视觉小说作品，支持中日英名称搜索">🎮 VNDB</button>
+                        <span class="source-desc">Galgame / 视觉小说</span>
+                    </div>
                 </div>
+
                 <!-- Bangumi 专属控件（VNDB 模式下隐藏） -->
                 <div id="bgmControls">
-                    <!-- 标签浏览器 -->
+                    <div class="section-label">题材标签 <span class="section-hint">— 点击添加标签组合筛选，可多选</span></div>
                     <div class="tag-browser" id="tagBrowser"></div>
-                    <!-- 已选标签 -->
                     <div class="tag-badges" id="tagBadges"></div>
-                <!-- 类型筛选 -->
-                <div class="type-filter-row" id="typeFilterRow">
-                    <button class="type-btn active" data-type="all" onclick="setSubjectType('all')">📦 全部</button>
-                    <button class="type-btn" data-type="anime" onclick="setSubjectType('anime')">🎥 动画</button>
-                    <button class="type-btn" data-type="manga" onclick="setSubjectType('manga')">📖 漫画</button>
-                    <button class="type-btn" data-type="novel" onclick="setSubjectType('novel')">📝 轻小说</button>
-                    <button class="type-btn" data-type="galgame" onclick="setSubjectType('galgame')">🎮 GALGAME</button>
-                </div>
-                <!-- 排序 -->
-                <div class="search-sort-row">
-                    <label>排序：</label>
-                    <select class="sort-select" id="sortSelect" onchange="onSortChange()">
-                        <option value="rank">按排名</option>
-                        <option value="score">按评分</option>
-                        <option value="heat" selected>按热度</option>
-                        <option value="match">按匹配度</option>
-                    </select>
-                </div>
+                    <div class="section-label">类型筛选</div>
+                    <div class="type-filter-row" id="typeFilterRow">
+                        <button class="type-btn active" data-type="all" onclick="setSubjectType('all')">📦 全部</button>
+                        <button class="type-btn" data-type="anime" onclick="setSubjectType('anime')">🎥 动画</button>
+                        <button class="type-btn" data-type="manga" onclick="setSubjectType('manga')">📖 漫画</button>
+                        <button class="type-btn" data-type="novel" onclick="setSubjectType('novel')">📝 轻小说</button>
+                        <button class="type-btn" data-type="galgame" onclick="setSubjectType('galgame')">🎮 GALGAME</button>
+                    </div>
+                    <div class="section-label">排序方式</div>
+                    <div class="search-sort-row">
+                        <select class="sort-select" id="sortSelect" onchange="onSortChange()">
+                            <option value="rank">按排名</option>
+                            <option value="score">按评分</option>
+                            <option value="heat" selected>按热度</option>
+                            <option value="match">按匹配度（需关键词）</option>
+                        </select>
+                    </div>
                 </div><!-- /bgmControls -->
+
+                <!-- VNDB 引导提示（BGM 模式下隐藏） -->
+                <div id="vndbGuide" class="vndb-guide" style="display:none">
+                    <div class="vndb-guide-icon">💡</div>
+                    <div class="vndb-guide-text">
+                        <strong>VNDB 搜索提示</strong>：直接输入视觉小说的中文名、日文原名或英文名进行搜索。
+                        支持模糊匹配，结果按相关度排序。点击作品卡片即可下载封面并应用到格子中。
+                    </div>
+                </div>
+
                 <!-- 关键词搜索 -->
+                <div class="section-label" id="searchBarLabel">关键词 <span class="section-hint">— 输入作品名称进一步筛选</span></div>
                 <div class="search-bar">
                     <input type="text" id="searchInput" placeholder="输入关键词进一步筛选（可选）..." onkeydown="if(event.key==='Enter') doSearch()">
                     <button onclick="doSearch()" id="searchBtn">搜索</button>
@@ -943,7 +1054,7 @@
                 <div id="resultInfo" class="result-info" style="display:none;"><span id="resultCount"></span></div>
                 <!-- 搜索结果 -->
                 <div id="searchResults">
-                    <div class="search-status">选择上方题材标签，或直接输入关键词搜索</div>
+                    <div class="search-status"><span class="search-status-icon">🔍</span>选择上方题材标签，或直接输入关键词搜索</div>
                 </div>
                 <!-- 分页 -->
                 <div id="pagination" class="pagination"></div>
@@ -1045,12 +1156,16 @@
 
     // 搜索面板的题材标签分组，用于 Bangumi tag 浏览。
     const allTags = [
-        { label: "情感体验", tags: ["治愈", "搞笑", "热血", "感动", "催泪", "致郁", "恐怖", "悬疑", "紧张"] },
-        { label: "恋爱人际", tags: ["恋爱", "青春", "百合", "BL", "后宫", "三角关系", "群像", "日常"] },
-        { label: "世界设定", tags: ["异世界", "穿越", "转生", "架空", "奇幻", "科幻", "赛博朋克", "末日", "史诗", "神话"] },
-        { label: "题材类型", tags: ["校园", "运动", "战斗", "冒险", "机甲", "超能力", "职场", "美食", "音乐", "偶像", "推理", "历史"] },
-        { label: "叙事风格", tags: ["剧情", "原创", "改编", "写实", "叙述性诡计", "时间循环", "智斗"] },
-        { label: "特色元素", tags: ["伪娘", "兽耳", "魔法", "女穿男装", "忍者", "武士", "吸血鬼", "僵尸"] },
+        { label: "情感", tags: ["治愈", "搞笑", "热血", "感动", "催泪", "致郁", "恐怖", "温馨", "燃", "虐心", "压抑", "紧张"] },
+        { label: "恋爱", tags: ["恋爱", "青春", "百合", "BL", "后宫", "纯爱", "暗恋", "三角关系", "初恋", "姐弟恋"] },
+        { label: "日常", tags: ["日常", "校园", "职场", "美食", "音乐", "偶像", "运动", "旅行", "料理", "家庭", "社团"] },
+        { label: "战斗", tags: ["战斗", "冒险", "超能力", "魔法少女", "竞技", "武术", "军事", "格斗", "生存"] },
+        { label: "推理", tags: ["推理", "悬疑", "智斗", "犯罪", "惊悚", "心理", "侦探", "复仇", "解谜"] },
+        { label: "幻想", tags: ["奇幻", "科幻", "机甲", "赛博朋克", "魔法", "妖怪", "吸血鬼", "太空", "人外"] },
+        { label: "背景", tags: ["异世界", "穿越", "转生", "架空", "末日", "史诗", "神话", "历史", "宫廷", "近未来", "废土"] },
+        { label: "叙事", tags: ["剧情", "原创", "改编", "写实", "叙述性诡计", "时间循环", "群像剧", "意识流"] },
+        { label: "角色", tags: ["群像", "伪娘", "兽耳", "傲娇", "病娇", "天然呆", "腹黑", "女仆", "大小姐", "龙傲天"] },
+        { label: "受众", tags: ["少年", "少女", "青年", "萌系", "子供向", "猎奇", "乙女向", "女性向"] },
     ];
 
     // 搜索状态
@@ -1508,11 +1623,20 @@
         document.querySelectorAll(".source-btn").forEach(b =>
             b.classList.toggle("active", b.dataset.source === src));
         document.getElementById("bgmControls").style.display = src === "bgm" ? "" : "none";
+        document.getElementById("vndbGuide").style.display = src === "vndb" ? "flex" : "none";
         const input = document.getElementById("searchInput");
-        input.placeholder = src === "vndb"
-            ? "输入 Galgame 名称搜索..."
-            : "输入关键词进一步筛选（可选）...";
-        // 切换数据源时清空结果
+        const barLabel = document.getElementById("searchBarLabel");
+        if (src === "vndb") {
+            input.placeholder = "输入 Galgame / 视觉小说名称搜索...";
+            barLabel.innerHTML = '关键词 <span class="section-hint">— 输入作品中/日/英名称</span>';
+        } else {
+            input.placeholder = "输入关键词进一步筛选（可选）...";
+            barLabel.innerHTML = '关键词 <span class="section-hint">— 输入作品名称进一步筛选</span>';
+        }
+        // 切换数据源时重置搜索按钮状态并清空结果
+        const btn = document.getElementById("searchBtn");
+        btn.disabled = false;
+        btn.textContent = "搜索";
         resetSearchResults();
     }
 
@@ -1604,11 +1728,16 @@
 
     // resetSearchResults 清空搜索结果区。
     function resetSearchResults() {
-        const hint = currentSource === "vndb"
-            ? "输入 Galgame 名称进行搜索"
-            : "选择上方题材标签，或直接输入关键词搜索";
+        let icon, hint;
+        if (currentSource === "vndb") {
+            icon = "🎮";
+            hint = "输入视觉小说名称开始搜索<br><span style='font-size:11px;color:#bbb'>支持中文、日文原名、英文名，模糊匹配</span>";
+        } else {
+            icon = "🔍";
+            hint = "选择上方题材标签，或直接输入关键词搜索<br><span style='font-size:11px;color:#bbb'>可组合多个标签 + 关键词 + 类型筛选</span>";
+        }
         document.getElementById("searchResults").innerHTML =
-            `<div class="search-status">${hint}</div>`;
+            `<div class="search-status"><span class="search-status-icon">${icon}</span>${hint}</div>`;
         document.getElementById("resultInfo").style.display = "none";
         document.getElementById("pagination").innerHTML = "";
     }
