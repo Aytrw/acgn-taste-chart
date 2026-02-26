@@ -12,7 +12,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -20,14 +19,14 @@ import (
 
 // Bangumi API 地址和请求参数。
 const (
-	bgmUserAgent   = "ACGNTable/1.0 (https://github.com/acgn-table)"
-	bgmV0SearchURL = "https://api.bgm.tv/v0/search/subjects"
-	bgmLegacyURL   = "https://api.bgm.tv/search/subject/"
-	cacheTTL       = 5 * time.Minute
-	cacheCleanTick = 1 * time.Minute
+	bgmUserAgent    = "OtakuChartMaker/1.0 (https://github.com/Aytrw/otaku-chart-maker)"
+	bgmV0SearchURL  = "https://api.bgm.tv/v0/search/subjects"
+	bgmLegacyURL    = "https://api.bgm.tv/search/subject/"
+	cacheTTL        = 5 * time.Minute
+	cacheCleanTick  = 1 * time.Minute
 	cacheMaxEntries = 800
-	defaultLimit   = 20
-	maxBrowseLimit = 100
+	defaultLimit    = 20
+	maxBrowseLimit  = 100
 )
 
 // ErrBadRequest 表示调用参数无效，应返回 4xx。
@@ -177,7 +176,6 @@ type BrowseRequest struct {
 	Offset      int      `json:"offset"`
 	Limit       int      `json:"limit"`
 	Sort        string   `json:"sort"`
-	Order       string   `json:"order"`
 	SubjectType string   `json:"subjectType"`
 }
 
@@ -208,9 +206,6 @@ func (c *Client) Browse(req BrowseRequest) (*BrowseResponse, error) {
 	}
 	if !validSorts[req.Sort] {
 		req.Sort = "rank"
-	}
-	if req.Order != "asc" && req.Order != "desc" {
-		req.Order = "desc"
 	}
 
 	// 校验：至少要有标签、关键词或类型之一
@@ -275,11 +270,6 @@ func (c *Client) Browse(req BrowseRequest) (*BrowseResponse, error) {
 		})
 	}
 
-	// Bangumi 返回默认是降序，升序时本地反转当前页。
-	if req.Order == "asc" {
-		slices.Reverse(results)
-	}
-
 	return &BrowseResponse{
 		Results: results,
 		Total:   raw.Total,
@@ -321,6 +311,11 @@ func (c *Client) DownloadCover(imgURL, filename string) (*DownloadResult, error)
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("下载失败 HTTP %d", resp.StatusCode)
+	}
+
+	ct := resp.Header.Get("Content-Type")
+	if !strings.HasPrefix(ct, "image/") {
+		return nil, fmt.Errorf("非图片类型: %s", ct)
 	}
 
 	imgData, err := io.ReadAll(resp.Body)
@@ -539,12 +534,13 @@ func uniqueFilename(dir, filename string) string {
 	}
 	ext := filepath.Ext(filename)
 	base := strings.TrimSuffix(filename, ext)
-	for n := 1; ; n++ {
+	for n := 1; n <= 9999; n++ {
 		candidate := fmt.Sprintf("%s_%d%s", base, n, ext)
 		if _, err := os.Stat(filepath.Join(dir, candidate)); os.IsNotExist(err) {
 			return candidate
 		}
 	}
+	return fmt.Sprintf("%s_%d%s", base, time.Now().UnixNano(), ext)
 }
 
 // truncateRunes 截断字符串到指定 rune 长度。
