@@ -82,15 +82,14 @@
         .cell-img-area {
             flex: 1;
             overflow: hidden;
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             background: #fff;
         }
         .cell-img-area img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            position: absolute;
             image-rendering: auto;
         }
         .cell-img-area .placeholder {
@@ -652,20 +651,20 @@
             border-radius: 6px;
             border: 2px solid rgba(255,255,255,0.18);
             box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
-            cursor: grab;
+            cursor: move;
             background: #000;
             touch-action: none;
+            transition: border-color 0.15s;
+        }
+        .crop-viewport:hover {
+            border-color: rgba(234,76,137,0.4);
         }
         .crop-viewport.dragging {
-            cursor: grabbing;
+            cursor: move;
+            border-color: rgba(234,76,137,0.7);
         }
         .crop-img {
             position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform-origin: center center;
             user-select: none;
             pointer-events: none;
         }
@@ -673,12 +672,41 @@
             position: absolute;
             inset: 0;
             pointer-events: none;
+            z-index: 1;
             background-image:
-                linear-gradient(to right, rgba(255,255,255,0.22) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255,255,255,0.22) 1px, transparent 1px);
+                linear-gradient(to right, rgba(255,255,255,0.6) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.6) 1px, transparent 1px);
             background-size: 33.333% 33.333%;
-            opacity: 0.5;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
         }
+        .crop-center-mark {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 20px; height: 20px;
+            margin: -10px 0 0 -10px;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.6;
+            transition: opacity 0.15s;
+        }
+        .crop-center-mark::before,
+        .crop-center-mark::after {
+            content: '';
+            position: absolute;
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 0 3px rgba(0,0,0,0.7);
+            border-radius: 1px;
+        }
+        .crop-center-mark::before {
+            left: 0; right: 0; top: 50%;
+            height: 2px; margin-top: -1px;
+        }
+        .crop-center-mark::after {
+            top: 0; bottom: 0; left: 50%;
+            width: 2px; margin-left: -1px;
+        }
+        .crop-viewport:hover .crop-center-mark,
+        .crop-viewport.dragging .crop-center-mark { opacity: 1; }
         .crop-controls {
             background: #f7f7f7;
             border: 1px solid #eee;
@@ -873,6 +901,7 @@
                         <div class="crop-viewport" id="cropViewport">
                             <img id="cropImage" class="crop-img" alt="crop-source" draggable="false">
                             <div class="crop-grid-overlay"></div>
+                            <div class="crop-center-mark"></div>
                         </div>
                     </div>
                     <div class="crop-controls">
@@ -1003,10 +1032,10 @@
 
     function clampCrop(crop) {
         crop.zoom = Math.min(3, Math.max(1, Number(crop.zoom) || 1));
-        const minCenter = 1 / (2 * crop.zoom);
-        const maxCenter = 1 - minCenter;
-        crop.centerX = Math.min(maxCenter, Math.max(minCenter, Number(crop.centerX) || 0.5));
-        crop.centerY = Math.min(maxCenter, Math.max(minCenter, Number(crop.centerY) || 0.5));
+        const cx = Number(crop.centerX);
+        const cy = Number(crop.centerY);
+        crop.centerX = Math.min(1, Math.max(0, isNaN(cx) ? 0.5 : cx));
+        crop.centerY = Math.min(1, Math.max(0, isNaN(cy) ? 0.5 : cy));
         return crop;
     }
 
@@ -1014,10 +1043,35 @@
         return clampCrop(cloneCrop(cellCrops[index] || defaultCrop()));
     }
 
-    function cropTransformStyle(crop) {
-        const tx = (0.5 - crop.centerX) * (crop.zoom - 1) * 100;
-        const ty = (0.5 - crop.centerY) * (crop.zoom - 1) * 100;
-        return `translate(${tx}%, ${ty}%) scale(${crop.zoom})`;
+    // computeCropLayout 根据图片原始尺寸、容器宽高比和裁剪参数计算定位百分比。
+    function computeCropLayout(natW, natH, containerRatio, crop) {
+        const imgRatio = natW / natH;
+        let wPct, hPct;
+        if (imgRatio > containerRatio) {
+            hPct = 100 * crop.zoom;
+            wPct = 100 * crop.zoom * imgRatio / containerRatio;
+        } else {
+            wPct = 100 * crop.zoom;
+            hPct = 100 * crop.zoom * containerRatio / imgRatio;
+        }
+        const overflowX = wPct - 100;
+        const overflowY = hPct - 100;
+        return {
+            width: wPct + '%',
+            height: hPct + '%',
+            left: -(crop.centerX * overflowX) + '%',
+            top: -(crop.centerY * overflowY) + '%',
+        };
+    }
+
+    // applyCropLayoutToElement 将裁剪布局应用到图片元素。
+    function applyCropLayoutToElement(img, layout) {
+        img.style.objectFit = '';
+        img.style.objectPosition = '';
+        img.style.width = layout.width;
+        img.style.height = layout.height;
+        img.style.left = layout.left;
+        img.style.top = layout.top;
     }
 
     function renderCellImage(index, altText = "cover") {
@@ -1038,7 +1092,16 @@
         const img = document.createElement("img");
         img.src = url;
         img.alt = altText;
-        img.style.transform = cropTransformStyle(crop);
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.objectPosition = `${crop.centerX * 100}% ${crop.centerY * 100}%`;
+        img.onload = () => {
+            const r = (area.offsetWidth && area.offsetHeight)
+                ? area.offsetWidth / area.offsetHeight : 150 / 204;
+            const layout = computeCropLayout(img.naturalWidth, img.naturalHeight, r, crop);
+            applyCropLayoutToElement(img, layout);
+        };
         area.appendChild(img);
 
         const editBtn = document.createElement("button");
@@ -1163,10 +1226,23 @@
         const title = texts[index] || "当前格子";
         document.getElementById("cropTitle").textContent = `裁剪封面 · 「${title}」`;
         const src = cellImages[index];
-        document.getElementById("cropImage").src = src;
-        document.getElementById("cropPreviewImage").src = src;
+        const cropImg = document.getElementById("cropImage");
+        const previewImg = document.getElementById("cropPreviewImage");
+        cropImg.src = src;
+        previewImg.src = src;
+        [cropImg, previewImg].forEach(el => {
+            el.style.width = '100%';
+            el.style.height = '100%';
+            el.style.objectFit = 'cover';
+            el.style.left = '0';
+            el.style.top = '0';
+        });
         syncCropInputs();
-        applyCropDraftToPreview();
+        if (cropImg.complete && cropImg.naturalWidth > 0) {
+            applyCropDraftToPreview();
+        } else {
+            cropImg.onload = () => applyCropDraftToPreview();
+        }
         document.getElementById("cropModal").classList.add("active");
     }
 
@@ -1194,9 +1270,13 @@
     function applyCropDraftToPreview() {
         if (!cropDraft) return;
         clampCrop(cropDraft);
-        const transform = cropTransformStyle(cropDraft);
-        document.getElementById("cropImage").style.transform = transform;
-        document.getElementById("cropPreviewImage").style.transform = transform;
+        const cropImg = document.getElementById("cropImage");
+        if (!cropImg.naturalWidth) return;
+        const layout = computeCropLayout(
+            cropImg.naturalWidth, cropImg.naturalHeight, 3 / 4, cropDraft
+        );
+        applyCropLayoutToElement(cropImg, layout);
+        applyCropLayoutToElement(document.getElementById("cropPreviewImage"), layout);
         syncCropInputs();
     }
 
@@ -1248,10 +1328,23 @@
         cropDragStartX = e.clientX;
         cropDragStartY = e.clientY;
 
+        const cropImg = document.getElementById("cropImage");
+        if (!cropImg.naturalWidth) return;
         const rect = cropViewport.getBoundingClientRect();
-        const zoomDelta = Math.max(0.001, cropDraft.zoom - 1);
-        cropDraft.centerX -= dx / (rect.width * zoomDelta);
-        cropDraft.centerY -= dy / (rect.height * zoomDelta);
+        const imgRatio = cropImg.naturalWidth / cropImg.naturalHeight;
+        const boxRatio = rect.width / rect.height || 3 / 4;
+        let wFactor, hFactor;
+        if (imgRatio > boxRatio) {
+            hFactor = cropDraft.zoom;
+            wFactor = cropDraft.zoom * imgRatio / boxRatio;
+        } else {
+            wFactor = cropDraft.zoom;
+            hFactor = cropDraft.zoom * boxRatio / imgRatio;
+        }
+        const overflowXPx = (wFactor - 1) * rect.width;
+        const overflowYPx = (hFactor - 1) * rect.height;
+        if (overflowXPx > 0.5) cropDraft.centerX -= dx / overflowXPx;
+        if (overflowYPx > 0.5) cropDraft.centerY -= dy / overflowYPx;
         cropDraft = clampCrop(cropDraft);
         applyCropDraftToPreview();
     });
@@ -1796,40 +1889,28 @@
         link.click();
     }
 
-    // coverDraw 使用 cover 方式绘制图片，行为等价于 CSS object-fit: cover。
+    // coverDraw 使用 cover 方式绘制图片并应用裁剪（centerX/centerY 控制全图内的可视区域偏移）。
     function coverDraw(ctx, img, x, y, w, h, crop = defaultCrop()) {
         crop = clampCrop(cloneCrop(crop));
         const imageRatio = img.width / img.height;
         const boxRatio = w / h;
-        let sx;
-        let sy;
-        let sw;
-        let sh;
-
+        let baseW, baseH;
         if (imageRatio > boxRatio) {
-            sh = img.height;
-            sw = sh * boxRatio;
-            sx = (img.width - sw) / 2;
-            sy = 0;
+            baseH = img.height;
+            baseW = baseH * boxRatio;
         } else {
-            sw = img.width;
-            sh = sw / boxRatio;
-            sx = 0;
-            sy = (img.height - sh) / 2;
+            baseW = img.width;
+            baseH = baseW / boxRatio;
         }
 
-        const cropW = sw / crop.zoom;
-        const cropH = sh / crop.zoom;
-        const centerX = sx + crop.centerX * sw;
-        const centerY = sy + crop.centerY * sh;
-        const minSX = sx;
-        const maxSX = sx + sw - cropW;
-        const minSY = sy;
-        const maxSY = sy + sh - cropH;
-        const finalSX = Math.min(maxSX, Math.max(minSX, centerX - cropW / 2));
-        const finalSY = Math.min(maxSY, Math.max(minSY, centerY - cropH / 2));
+        const srcW = baseW / crop.zoom;
+        const srcH = baseH / crop.zoom;
+        const maxOffX = img.width - srcW;
+        const maxOffY = img.height - srcH;
+        const srcX = crop.centerX * maxOffX;
+        const srcY = crop.centerY * maxOffY;
 
-        ctx.drawImage(img, finalSX, finalSY, cropW, cropH, x, y, w, h);
+        ctx.drawImage(img, srcX, srcY, srcW, srcH, x, y, w, h);
     }
 
     // 启动流程：初始化网格、标签浏览器，再加载封面和状态。
