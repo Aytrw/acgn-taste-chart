@@ -643,28 +643,17 @@
         }
         .tag-cat-row {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: 6px;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
         }
         .tag-cat-row:last-child { margin-bottom: 0; }
         .tag-cat-label {
             font-size: 11px;
-            color: #888;
+            color: #999;
             white-space: nowrap;
-            min-width: 30px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 3px;
-            padding-top: 3px;
-            flex-shrink: 0;
-        }
-        .tag-cat-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            flex-shrink: 0;
+            min-width: 32px;
+            font-weight: bold;
         }
         .tag-cat-group {
             display: flex;
@@ -673,31 +662,20 @@
         }
         .tag-pick-btn {
             padding: 2px 8px;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 11px;
+            border: 1.5px solid #ddd;
+            border-radius: 12px;
             background: #fff;
             font-size: 12px;
             cursor: pointer;
             color: #555;
-            transition: all 0.2s ease;
+            transition: all 0.15s;
             line-height: 1.5;
-            user-select: none;
         }
-        .tag-pick-btn:hover {
-            border-color: #ea4c89;
-            color: #ea4c89;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(234,76,137,0.15);
-        }
+        .tag-pick-btn:hover { border-color: #ea4c89; color: #ea4c89; }
         .tag-pick-btn.active {
             background: #ea4c89;
             border-color: #ea4c89;
             color: #fff;
-            box-shadow: 0 1px 3px rgba(234,76,137,0.3);
-        }
-        .tag-pick-btn:active {
-            transform: scale(0.95);
-            transition: transform 0.08s;
         }
         .search-sort-row {
             display: flex;
@@ -1020,7 +998,7 @@
                 <div class="source-selector-row">
                     <div class="source-btn-wrap">
                         <button class="source-btn active" data-source="bgm" onclick="setSource('bgm')"
-                            title="Bangumi 番组计划 — 综合性 ACGN 信息站，收录动画、漫画、游戏、音乐、小说等条目，拥有丰富的标签和评分体系">📺 Bangumi</button>
+                            title="Bangumi 番组计划 — 综合性 ACGN 信息站，收录动画、漫画、游戏、音乐、轻小说等条目，拥有丰富的标签和评分体系">📺 Bangumi</button>
                         <span class="source-desc">动画 / 漫画 / 游戏 / 小说</span>
                     </div>
                     <div class="source-btn-wrap">
@@ -1040,7 +1018,7 @@
                         <button class="type-btn active" data-type="all" onclick="setSubjectType('all')">📦 全部</button>
                         <button class="type-btn" data-type="anime" onclick="setSubjectType('anime')">🎥 动画</button>
                         <button class="type-btn" data-type="manga" onclick="setSubjectType('manga')">📖 漫画</button>
-                        <button class="type-btn" data-type="novel" onclick="setSubjectType('novel')">📝 小说</button>
+                        <button class="type-btn" data-type="novel" onclick="setSubjectType('novel')">📝 轻小说</button>
                         <button class="type-btn" data-type="game" onclick="setSubjectType('game')">🎮 游戏</button>
                     </div>
                     <div class="section-label">排序方式</div>
@@ -1173,19 +1151,18 @@
     let cropDragStartX = 0;
     let cropDragStartY = 0;
 
-    /* 搜索面板的题材标签分组，用于 Bangumi tag 浏览。
-       color 对应分类色标，tags 会作为 Bangumi tag 参数传入搜索 API。 */
+    // 搜索面板的题材标签分组，用于 Bangumi tag 浏览。
     const allTags = [
-        { label: "情感", color: "#e84393", tags: ["治愈", "搞笑", "热血", "感动", "催泪", "致郁", "恐怖", "温馨", "燃", "虐心", "压抑", "紧张", "轻松", "浪漫", "荒诞", "黑暗"] },
-        { label: "恋爱", color: "#fd79a8", tags: ["恋爱", "百合", "BL", "后宫", "纯爱", "暗恋", "三角关系", "初恋", "青梅竹马", "姐弟恋", "师生恋", "同居", "异地恋", "妹控", "NTR"] },
-        { label: "日常", color: "#fdcb6e", tags: ["日常", "校园", "青春", "职场", "美食", "音乐", "偶像", "运动", "旅行", "料理", "家庭", "社团", "乡村", "宠物", "露营", "钓鱼"] },
-        { label: "动作", color: "#e17055", tags: ["战斗", "冒险", "超能力", "竞技", "格斗", "军事", "机战", "武术", "生存", "魔法少女", "特工", "暗杀", "异能", "复仇"] },
-        { label: "悬疑", color: "#a29bfe", tags: ["推理", "悬疑", "智斗", "犯罪", "惊悚", "心理", "侦探", "解谜", "密室", "谋略", "间谍", "阴谋", "猎奇", "黑帮"] },
-        { label: "幻想", color: "#74b9ff", tags: ["奇幻", "科幻", "机甲", "赛博朋克", "魔法", "妖怪", "吸血鬼", "玄幻", "人外", "精灵", "蒸汽朋克", "克苏鲁", "都市奇幻"] },
-        { label: "设定", color: "#00cec9", tags: ["异世界", "穿越", "转生", "架空", "末日", "史诗", "神话", "历史", "宫廷", "近未来", "废土", "太空", "战争", "中世纪", "江户", "现代"] },
-        { label: "叙事", color: "#636e72", tags: ["剧情", "原创", "改编", "写实", "叙述性诡计", "时间循环", "群像剧", "意识流", "反转", "多线叙事", "短篇", "长篇", "非线性"] },
-        { label: "属性", color: "#fab1a0", tags: ["群像", "伪娘", "兽耳", "傲娇", "病娇", "天然呆", "腹黑", "女仆", "大小姐", "萌系", "妹系", "正太", "萝莉", "眼镜", "龙傲天"] },
-        { label: "受众", color: "#b2bec3", tags: ["少年", "少女", "青年", "乙女", "GL", "子供向", "女性向", "男性向", "泡面番", "全年龄", "成人向", "R18"] },
+        { label: "情感", tags: ["治愈", "搞笑", "热血", "感动", "催泪", "致郁", "恐怖", "温馨", "燃", "虐心", "压抑", "紧张"] },
+        { label: "恋爱", tags: ["恋爱", "青春", "百合", "BL", "后宫", "纯爱", "暗恋", "三角关系", "初恋", "姐弟恋"] },
+        { label: "日常", tags: ["日常", "校园", "职场", "美食", "音乐", "偶像", "运动", "旅行", "料理", "家庭", "社团"] },
+        { label: "战斗", tags: ["战斗", "冒险", "超能力", "竞技", "格斗", "军事", "机战", "武术", "生存", "魔法少女"] },
+        { label: "推理", tags: ["推理", "悬疑", "智斗", "犯罪", "惊悚", "心理", "侦探", "复仇", "解谜"] },
+        { label: "幻想", tags: ["奇幻", "科幻", "机甲", "赛博朋克", "魔法", "妖怪", "吸血鬼", "玄幻", "人外"] },
+        { label: "背景", tags: ["异世界", "穿越", "转生", "架空", "末日", "史诗", "神话", "历史", "宫廷", "近未来", "废土", "太空"] },
+        { label: "叙事", tags: ["剧情", "原创", "改编", "写实", "叙述性诡计", "时间循环", "群像剧", "意识流"] },
+        { label: "角色", tags: ["群像", "伪娘", "兽耳", "傲娇", "病娇", "天然呆", "腹黑", "女仆", "大小姐", "萌系"] },
+        { label: "受众", tags: ["少年", "少女", "青年", "乙女", "GL", "子供向", "猎奇", "女性向"] },
     ];
 
     // 搜索状态
@@ -1680,14 +1657,14 @@
 
     // ---- 搜索面板功能 ----
 
-    // initTagBrowser 按分类渲染标签选择按钮，带分类色标。
+    // initTagBrowser 按分类渲染标签选择按钮。
     function initTagBrowser() {
         const browser = document.getElementById("tagBrowser");
         browser.innerHTML = "";
-        allTags.forEach(({ label, color, tags }) => {
+        allTags.forEach(({ label, tags }) => {
             const row = document.createElement("div");
             row.className = "tag-cat-row";
-            row.innerHTML = `<span class="tag-cat-label"><span class="tag-cat-dot" style="background:${color}"></span>${label}</span>`;
+            row.innerHTML = `<span class="tag-cat-label">${label}</span>`;
             const group = document.createElement("div");
             group.className = "tag-cat-group";
             tags.forEach(tag => {
@@ -1846,15 +1823,6 @@
         if (params.tags.length > 0) body.tags = params.tags;
         if (params.keyword) body.keyword = params.keyword;
 
-        // 漫画/小说使用游标式分页：从上一页响应中取 next_api_offset
-        if (page > 1 && (params.subjectType === "manga" || params.subjectType === "novel")) {
-            const prevKey = pageCacheKey(params, page - 1);
-            const prevData = _pageCache.get(prevKey);
-            if (prevData && prevData.next_api_offset) {
-                body.apiOffset = prevData.next_api_offset;
-            }
-        }
-
         const promise = (async () => {
             const resp = await fetch("/api/browse", {
                 method: "POST",
@@ -1875,22 +1843,7 @@
     }
 
     // prefetchAround 后台预加载相邻页，复用 fetchPageData 去重逻辑。
-    // 漫画/小说使用游标分页，必须串行预加载（下一页依赖上一页的响应）。
     function prefetchAround(page, totalPages, params, version) {
-        const isSubFiltered = params.subjectType === "manga" || params.subjectType === "novel";
-        if (isSubFiltered) {
-            // 只预加载下一页，且等当前页缓存就绪后串行执行
-            const nextPage = page + 1;
-            if (nextPage <= totalPages) {
-                const curKey = pageCacheKey(params, page);
-                // 当前页已缓存时直接预加载；否则等缓存写入后预加载
-                if (_pageCache.has(curKey)) {
-                    fetchPageData(nextPage, params, version).catch(() => {});
-                }
-                // 如果当前页还在飞行中，loadAndRenderPage 完成后会再调 prefetchAround
-            }
-            return;
-        }
         PREFETCH_STEPS.forEach(step => {
             const nextPage = page + step;
             if (nextPage < 1 || nextPage > totalPages || nextPage === page) {
@@ -1965,7 +1918,14 @@
         grid.className = "search-results";
         resultsDiv.appendChild(grid);
 
-        items.forEach(item => {
+        // 计算列数并截断到完整行，避免最后一行空位
+        const pageSize = getSearchPageSize();
+        const cols = pageSize / SEARCH_ROWS;
+        const displayCount = items.length >= cols
+            ? Math.floor(items.length / cols) * cols
+            : items.length;
+
+        items.slice(0, displayCount).forEach(item => {
             const el = document.createElement("div");
             el.className = "search-item";
             const displayName = item.name_cn || item.name;
@@ -1975,7 +1935,7 @@
             const typeClass = typeLabel === "动画" ? "type-anime"
                             : typeLabel === "游戏" ? "type-game"
                             : typeLabel === "漫画" ? "type-manga"
-                            : typeLabel === "小说" ? "type-novel" : "";
+                            : typeLabel === "轻小说" ? "type-novel" : "";
             const score = item.score ? `⭐${item.score}` : "";
 
             el.innerHTML = `
@@ -2036,32 +1996,11 @@
     }
 
     // goToPage 跳转到指定页。
-    // 漫画/小说使用游标分页，跳页时需要按顺序拉取中间页以构建游标链。
-    async function goToPage(page) {
+    function goToPage(page) {
         currentPage = page;
         const params = currentSearchParams();
         const key = pageCacheKey(params, page);
         const shouldShowLoading = !_pageCache.has(key) && !_inflight.has(key);
-
-        // 漫画/小说：确保前序页的游标链完整
-        if (page > 1 && (params.subjectType === "manga" || params.subjectType === "novel")) {
-            const prevKey = pageCacheKey(params, page - 1);
-            if (!_pageCache.has(prevKey) && !_inflight.has(prevKey)) {
-                const ver = _searchVersion;
-                if (shouldShowLoading) {
-                    document.getElementById("searchResults").innerHTML =
-                        '<div class="search-status"><div class="spinner"></div><br>正在加载作品...</div>';
-                }
-                for (let p = 1; p < page; p++) {
-                    const pk = pageCacheKey(params, p);
-                    if (!_pageCache.has(pk)) {
-                        await fetchPageData(p, params, ver);
-                    }
-                    if (ver !== _searchVersion) return; // 搜索条件已变，放弃
-                }
-            }
-        }
-
         loadAndRenderPage(page, shouldShowLoading);
         document.getElementById("searchResults").scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -2230,7 +2169,14 @@
         grid.className = "search-results";
         resultsDiv.appendChild(grid);
 
-        items.forEach(item => {
+        // 计算列数并截断到完整行，避免最后一行空位
+        const pageSize = getSearchPageSize();
+        const cols = pageSize / SEARCH_ROWS;
+        const displayCount = items.length >= cols
+            ? Math.floor(items.length / cols) * cols
+            : items.length;
+
+        items.slice(0, displayCount).forEach(item => {
             const el = document.createElement("div");
             el.className = "search-item";
             const displayName = item.name_cn || item.name;
