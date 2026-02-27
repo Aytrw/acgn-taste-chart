@@ -92,6 +92,7 @@ func (h *handler) routes() {
 	h.mux.HandleFunc("/api/covers", h.handleCovers)
 	h.mux.HandleFunc("/api/search", h.handleSearch)
 	h.mux.HandleFunc("/api/browse", h.handleBrowse)
+	h.mux.HandleFunc("/api/recommend", h.handleRecommend)
 	h.mux.HandleFunc("/api/download-cover", h.handleDownloadCover)
 	h.mux.HandleFunc("/api/upload-cover", h.handleUploadCover)
 	h.mux.HandleFunc("/api/vndb/search", h.handleVNDBSearch)
@@ -343,6 +344,28 @@ func (h *handler) handleVNDBSearch(w http.ResponseWriter, r *http.Request) {
 		"total":   resp.Count,
 		"more":    resp.More,
 	})
+}
+
+// handleRecommend 处理批量推荐请求（POST /api/recommend）。
+func (h *handler) handleRecommend(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req api.RecommendRequest
+	if err := readJSON(r, &req); err != nil {
+		h.writeJSON(w, http.StatusBadRequest, map[string]string{"error": "解析请求失败"})
+		return
+	}
+
+	resp, err := h.bgm.Recommend(req)
+	if err != nil {
+		h.writeAPIError(w, err)
+		return
+	}
+
+	h.writeJSON(w, http.StatusOK, resp)
 }
 
 // handleDownloadCover 处理封面下载请求（POST /api/download-cover）。

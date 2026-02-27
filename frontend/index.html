@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -969,17 +969,390 @@
         .crop-save-btn:disabled { background: #ccc; cursor: not-allowed; }
 
         #exportCanvas { display: none; }
+
+        /* ========== 智能推荐系统 ========== */
+        .spinner {
+            display: inline-block;
+            width: 20px; height: 20px;
+            border: 3px solid #eee;
+            border-top-color: #ea4c89;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        .fill-progress-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #888;
+        }
+        .fill-progress-bar .bar-track {
+            flex: 1;
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .fill-progress-bar .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ea4c89, #f082ac);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        .fill-progress-bar .bar-text {
+            font-weight: bold;
+            color: #ea4c89;
+            white-space: nowrap;
+            min-width: 70px;
+        }
+        /* ========== 格子浮窗 ========== */
+        .cell-popover {
+            position: absolute;
+            z-index: 900;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+            padding: 14px;
+            width: 380px;
+            max-height: 420px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            animation: popoverIn 0.15s ease-out;
+        }
+        .cell-popover::-webkit-scrollbar { width: 5px; }
+        .cell-popover::-webkit-scrollbar-track { background: transparent; }
+        .cell-popover::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+        @keyframes popoverIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .popover-arrow {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            transform: rotate(45deg);
+            box-shadow: -2px -2px 4px rgba(0,0,0,0.06);
+        }
+        .popover-arrow-left { left: -6px; }
+        .popover-arrow-right { right: -6px; }
+        .popover-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .popover-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .popover-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #aaa;
+            padding: 0 2px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .popover-close:hover { color: #333; }
+        .popover-current {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .popover-current-img {
+            width: 56px;
+            height: 75px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1.5px solid #eee;
+            flex-shrink: 0;
+        }
+        .popover-current-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 6px;
+            flex: 1;
+            min-width: 0;
+        }
+        .popover-current-name {
+            font-size: 13px;
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .popover-current-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .popover-action-btn {
+            padding: 4px 12px;
+            border: 1.5px solid #ddd;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #555;
+            transition: all 0.15s;
+        }
+        .popover-action-btn:hover { border-color: #ea4c89; color: #ea4c89; }
+        .popover-action-btn.danger { border-color: #ff6b6b; color: #ff6b6b; }
+        .popover-action-btn.danger:hover { background: #ff6b6b; color: #fff; }
+        .popover-section-label {
+            font-size: 11px;
+            color: #999;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .popover-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .popover-item {
+            cursor: pointer;
+            border: 2px solid #eee;
+            border-radius: 6px;
+            overflow: hidden;
+            transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+            background: #fff;
+        }
+        .popover-item:hover {
+            border-color: #ea4c89;
+            box-shadow: 0 2px 10px rgba(234,76,137,0.2);
+            transform: scale(1.04);
+        }
+        .popover-item-img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+            background: #f5f5f5;
+        }
+        .popover-item-name {
+            font-size: 9px;
+            font-weight: bold;
+            color: #333;
+            padding: 2px 3px 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .popover-item-score {
+            font-size: 9px;
+            color: #ff9800;
+            font-weight: bold;
+            padding: 0 3px 2px;
+        }
+        .popover-loading {
+            text-align: center;
+            padding: 20px;
+            color: #aaa;
+            font-size: 12px;
+        }
+        .popover-footer {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .popover-footer-btn {
+            padding: 6px 16px;
+            border: 1.5px solid #ddd;
+            border-radius: 16px;
+            background: #fff;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #555;
+            transition: all 0.15s;
+        }
+        .popover-footer-btn:hover { border-color: #ea4c89; color: #ea4c89; }
+        .popover-footer-btn.primary {
+            background: #ea4c89;
+            border-color: #ea4c89;
+            color: #fff;
+        }
+        .popover-footer-btn.primary:hover { background: #d93a77; }
+        .popover-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 899;
+        }
+        .fill-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .fill-overlay-box {
+            background: #fff;
+            padding: 30px 50px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            min-width: 320px;
+        }
+        .fill-overlay-box .fill-bar {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 16px 0 10px;
+        }
+        .fill-overlay-box .fill-bar-inner {
+            height: 100%;
+            background: linear-gradient(90deg, #ea4c89, #f082ac);
+            border-radius: 4px;
+            transition: width 0.15s;
+        }
+        .fill-overlay-box .fill-text {
+            font-size: 15px;
+            font-weight: bold;
+            color: #333;
+        }
+        .fill-overlay-box .fill-sub {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+        .welcome-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .welcome-box {
+            background: #fff;
+            padding: 36px 40px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+            max-width: 420px;
+            width: 92%;
+        }
+        .welcome-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .welcome-sub {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+        .welcome-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .welcome-btn-primary {
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #ea4c89, #f082ac);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(234,76,137,0.3);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .welcome-btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(234,76,137,0.4);
+        }
+        .welcome-btn-secondary {
+            padding: 12px 24px;
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .welcome-btn-secondary:hover { background: #eee; }
+        .ctrl-btn.recommend-btn {
+            background: linear-gradient(135deg, #ea4c89, #f082ac);
+            box-shadow: 0 3px 10px rgba(234, 76, 137, 0.3);
+        }
+        .ctrl-btn.secondary-btn {
+            background: #f5f5f5;
+            color: #666;
+            box-shadow: none;
+            border: 1px solid #ddd;
+        }
+        .ctrl-btn.secondary-btn:hover { background: #e8e8e8; color: #333; }
     </style>
 </head>
 <body>
 
     <div class="grid-wrapper">
         <div class="grid-title">ACGN生涯个人喜好表</div>
+        <div class="fill-progress-bar" id="progressBar">
+            <span class="bar-text" id="progressText">已填 0/60</span>
+            <div class="bar-track"><div class="bar-fill" id="progressFill" style="width:0%"></div></div>
+        </div>
         <div class="grid-container" id="gridContainer"></div>
     </div>
 
     <div class="ctrl-box">
+        <button class="ctrl-btn recommend-btn" onclick="autoFillAll()">✨ 一键智能填充</button>
         <button class="ctrl-btn" onclick="saveImage()">💾 保存为图片</button>
+        <button class="ctrl-btn secondary-btn" onclick="clearAll()">🗑️ 全部清空</button>
+    </div>
+
+    <!-- 格子浮窗 -->
+    <div class="popover-backdrop" id="popoverBackdrop" style="display:none" onclick="hidePopover()"></div>
+    <div class="cell-popover" id="cellPopover" style="display:none">
+        <div class="popover-arrow" id="popoverArrow"></div>
+        <div class="popover-header">
+            <span class="popover-title" id="popoverTitle"></span>
+            <button class="popover-close" onclick="hidePopover()">×</button>
+        </div>
+        <div id="popoverCurrentSection" style="display:none">
+            <div class="popover-current">
+                <img class="popover-current-img" id="popoverCurrentImg" src="" alt="">
+                <div class="popover-current-info">
+                    <div class="popover-current-name" id="popoverCurrentName"></div>
+                    <div class="popover-current-actions">
+                        <button class="popover-action-btn" onclick="popoverCrop()">✂ 裁剪</button>
+                        <button class="popover-action-btn danger" onclick="popoverClear()">✖ 清除</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="popover-section-label" id="popoverRecLabel">🔥 热门推荐</div>
+        <div class="popover-grid" id="popoverGrid"></div>
+        <div class="popover-footer">
+            <button class="popover-footer-btn" id="popoverMoreBtn" onclick="popoverLoadMore()">🔄 换一批</button>
+            <button class="popover-footer-btn primary" onclick="popoverOpenFullModal()">🔍 手动选择</button>
+        </div>
     </div>
 
     <!-- 封面选择弹窗 -->
@@ -1130,6 +1503,27 @@
 
     <canvas id="exportCanvas"></canvas>
 
+    <!-- 首次引导 -->
+    <div class="welcome-overlay" id="welcomeGuide" style="display:none">
+        <div class="welcome-box">
+            <div class="welcome-title">✨ 欢迎使用</div>
+            <div class="welcome-sub">60 个格子不知道填什么？<br>让系统为你推荐高分作品，你只需审阅修改</div>
+            <div class="welcome-actions">
+                <button class="welcome-btn-primary" onclick="dismissWelcomeAndFill()">🚀 一键智能填充</button>
+                <button class="welcome-btn-secondary" onclick="dismissWelcome()">✋ 我要自己填</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 填充进度 -->
+    <div class="fill-overlay" id="fillOverlay" style="display:none">
+        <div class="fill-overlay-box">
+            <div class="fill-text" id="fillText">正在为你挑选作品...</div>
+            <div class="fill-bar"><div class="fill-bar-inner" id="fillBarInner" style="width:0%"></div></div>
+            <div class="fill-sub" id="fillSub">0/60</div>
+        </div>
+    </div>
+
 <script>
     // texts 定义 6×10 网格的 60 个分类标签。
     const texts = [
@@ -1149,6 +1543,10 @@
     const cellImages = new Array(texts.length).fill(null);
     // cellCrops 保存每个格子的裁剪参数（仅影响当前用户展示与导出，不改原图）。
     const cellCrops = new Array(texts.length).fill(null);
+    // cellSubjectIDs 保存每个格子关联的 Bangumi 作品 ID，用于推荐去重。
+    const cellSubjectIDs = new Array(texts.length).fill(null);
+    // cellSwapOffsets 保存每个格子的"换一个"偏移计数。
+    const cellSwapOffsets = new Array(texts.length).fill(0);
     // coverUrls 保存 /api/covers 返回的封面列表。
     let coverUrls = [];
     // activeCellIndex 记录当前正在编辑的格子索引。
@@ -1175,6 +1573,71 @@
         { label: "属性", color: "#fab1a0", tags: ["群像", "伪娘", "兽耳", "傲娇", "病娇", "天然呆", "腹黑", "女仆", "大小姐", "萌系", "妹系", "正太", "萝莉", "眼镜", "龙傲天"] },
         { label: "受众", color: "#b2bec3", tags: ["少年", "少女", "青年", "乙女", "GL", "子供向", "女性向", "男性向", "泡面番", "全年龄", "成人向", "R18"] },
     ];
+
+    // cellTagMap 定义每个格子标签对应的推荐策略。
+    // 独立于 texts 数组，方便为不同表格模板配置不同映射。
+    const cellTagMap = {
+        "入坑作":       { tags: [], sort: "heat", type: "anime" },
+        "最喜欢":       { tags: [], sort: "heat", type: "anime" },
+        "看最多次":     { tags: [], sort: "heat", type: "anime" },
+        "最想安利":     { tags: [], sort: "heat", type: "anime" },
+        "最一眼缘":     { tags: ["治愈", "日常"], sort: "heat" },
+        "最震撼":       { tags: ["热血", "燃"], sort: "heat" },
+        "最治愈":       { tags: ["治愈"], sort: "heat" },
+        "最搞笑":       { tags: ["搞笑"], sort: "heat" },
+        "最感动":       { tags: ["感动", "催泪"], sort: "heat" },
+        "最热血":       { tags: ["热血"], sort: "heat" },
+        "最致郁":       { tags: ["致郁"], sort: "heat" },
+        "最电波":       { tags: ["搞笑"], sort: "heat" },
+        "最佳剧情":     { tags: ["剧情"], sort: "heat" },
+        "最佳演出":     { tags: [], sort: "heat", type: "anime" },
+        "最佳音乐":     { tags: ["音乐"], sort: "heat" },
+        "最佳世界观":   { tags: ["奇幻", "科幻"], sort: "heat" },
+        "最佳角色塑造": { tags: ["群像剧"], sort: "heat" },
+        "扭的最厉害":   { tags: ["反转"], sort: "heat" },
+        "最佳恋爱":     { tags: ["恋爱"], sort: "heat" },
+        "最佳修罗场":   { tags: ["三角关系", "后宫"], sort: "heat" },
+        "最佳后宫":     { tags: ["后宫"], sort: "heat" },
+        "最佳百合":     { tags: ["百合"], sort: "heat" },
+        "最佳耽美":     { tags: ["BL"], sort: "heat" },
+        "最佳群像":     { tags: ["群像"], sort: "heat" },
+        "最佳日常":     { tags: ["日常"], sort: "heat" },
+        "最佳校园":     { tags: ["校园"], sort: "heat" },
+        "最佳运动":     { tags: ["运动"], sort: "heat" },
+        "最佳战斗":     { tags: ["战斗"], sort: "heat" },
+        "最佳智斗":     { tags: ["智斗"], sort: "heat" },
+        "最佳悬疑":     { tags: ["悬疑", "推理"], sort: "heat" },
+        "最佳奇幻":     { tags: ["奇幻"], sort: "heat" },
+        "最佳科幻":     { tags: ["科幻"], sort: "heat" },
+        "最佳机甲":     { tags: ["机战"], sort: "heat" },
+        "最佳冒险":     { tags: ["冒险"], sort: "heat" },
+        "最佳史诗":     { tags: ["史诗"], sort: "heat" },
+        "最佳末日":     { tags: ["末日"], sort: "heat" },
+        "最佳异世界":   { tags: ["异世界"], sort: "heat" },
+        "最佳穿越":     { tags: ["穿越"], sort: "heat" },
+        "最佳架空":     { tags: ["架空"], sort: "heat" },
+        "最佳转生":     { tags: ["转生"], sort: "heat" },
+        "最佳原创":     { tags: ["原创"], sort: "heat" },
+        "最佳改编":     { tags: ["改编"], sort: "heat" },
+        "最佳时间轮回": { tags: ["时间循环"], sort: "heat" },
+        "最佳叙诡":     { tags: ["叙述性诡计"], sort: "heat" },
+        "最佳伪娘":     { tags: ["伪娘"], sort: "heat" },
+        "最佳超能力":   { tags: ["超能力"], sort: "heat" },
+        "最佳职场":     { tags: ["职场"], sort: "heat" },
+        "最佳美食":     { tags: ["美食", "料理"], sort: "heat" },
+        "小众最爱":     { tags: [], sort: "score", type: "anime" },
+        "最爱画风":     { tags: [], sort: "heat", type: "anime" },
+        "最爱长篇":     { tags: ["长篇"], sort: "heat" },
+        "最恐怖":       { tags: ["恐怖"], sort: "heat" },
+        "最写实":       { tags: ["写实"], sort: "heat" },
+        "常听说从未看": { tags: [], sort: "heat", type: "anime" },
+        "花最多钱":     { tags: [], sort: "heat", type: "anime" },
+        "最被低估":     { tags: [], sort: "score", type: "anime" },
+        "最过誉":       { tags: [], sort: "heat", type: "anime" },
+        "最胃疼":       { tags: ["致郁", "虐心"], sort: "heat" },
+        "最期续作":     { tags: [], sort: "heat", type: "anime" },
+        "最讨厌":       { tags: [], sort: "heat", type: "anime" },
+    };
 
     // 搜索状态
     let currentTags = [];           // 当前选中的标签列表
@@ -1227,7 +1690,13 @@
         texts.forEach((text, i) => {
             const cell = document.createElement("div");
             cell.className = "grid-cell";
-            cell.onclick = () => openCoverPicker(i);
+            cell.onclick = () => {
+                if (cellTagMap[text]) {
+                    showPopover(i);
+                } else {
+                    openCoverPicker(i);
+                }
+            };
             cell.innerHTML = `
                 <div class="cell-img-area" id="imgArea${i}">
                     <span class="placeholder">＋</span>
@@ -1454,9 +1923,8 @@
         // 重置数据源为 Bangumi
         setSource("bgm");
 
-        // 默认显示已有封面 Tab
-        switchTab("covers");
         resetPageSizeCache();
+        switchTab("covers");
         document.getElementById("coverModal").classList.add("active");
     }
 
@@ -1467,7 +1935,9 @@
         cellCrops[i] = defaultCrop();
         renderCellImage(i, name);
         closeModal();
+        hidePopover();
         saveState();
+        updateProgressBar();
     }
 
     // clearCover 清除当前格子的封面并保存状态。
@@ -1475,9 +1945,13 @@
         const i = activeCellIndex;
         cellImages[i] = null;
         cellCrops[i] = null;
+        cellSubjectIDs[i] = null;
+        cellSwapOffsets[i] = 0;
         renderCellImage(i);
         closeModal();
+        hidePopover();
         saveState();
+        updateProgressBar();
     }
 
     // closeModal 关闭封面选择弹窗。
@@ -2052,6 +2526,10 @@
 
             // 将下载的封面应用到当前格子
             const coverPath = "covers/" + encodeURIComponent(data.filename);
+            // 记录作品 ID 用于推荐去重
+            if (source !== "vndb" && typeof item.id === "number") {
+                cellSubjectIDs[activeCellIndex] = item.id;
+            }
             selectCover(coverPath, data.filename);
             await loadCovers();
         } catch (e) {
@@ -2264,7 +2742,12 @@
             await fetch("/api/state", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ cells: cellImages, crops: cellCrops })
+                body: JSON.stringify({
+                    cells: cellImages,
+                    crops: cellCrops,
+                    subjectIDs: cellSubjectIDs,
+                    swapOffsets: cellSwapOffsets,
+                })
             });
         } catch (e) {
             console.warn("保存状态失败:", e);
@@ -2277,18 +2760,31 @@
             const resp = await fetch("/api/state");
             if (!resp.ok) return;
             const data = await resp.json();
-            if (!data.cells) return;
+            if (!data.cells) {
+                showWelcomeGuide();
+                return;
+            }
+            let hasContent = false;
             data.cells.forEach((url, i) => {
                 if (url && i < cellImages.length) {
                     cellImages[i] = url;
+                    hasContent = true;
                     if (Array.isArray(data.crops) && data.crops[i]) {
                         cellCrops[i] = clampCrop(cloneCrop(data.crops[i]));
                     } else {
                         cellCrops[i] = defaultCrop();
                     }
+                    if (Array.isArray(data.subjectIDs) && data.subjectIDs[i] != null) {
+                        cellSubjectIDs[i] = data.subjectIDs[i];
+                    }
+                    if (Array.isArray(data.swapOffsets) && data.swapOffsets[i]) {
+                        cellSwapOffsets[i] = data.swapOffsets[i];
+                    }
                     renderCellImage(i);
                 }
             });
+            updateProgressBar();
+            if (!hasContent) showWelcomeGuide();
         } catch (e) {
             console.warn("加载状态失败:", e);
         }
@@ -2431,6 +2927,374 @@
 
         ctx.drawImage(img, srcX, srcY, srcW, srcH, x, y, w, h);
     }
+
+    // ---- 进度条 ----
+
+    function getFilledCount() {
+        return cellImages.filter(img => img !== null).length;
+    }
+
+    function updateProgressBar() {
+        const filled = getFilledCount();
+        const total = texts.length;
+        const pct = Math.round(filled / total * 100);
+        document.getElementById("progressText").textContent = `已填 ${filled}/${total}`;
+        document.getElementById("progressFill").style.width = pct + "%";
+    }
+
+    // ---- 首次引导 ----
+
+    function showWelcomeGuide() {
+        document.getElementById("welcomeGuide").style.display = "flex";
+    }
+
+    function dismissWelcome() {
+        document.getElementById("welcomeGuide").style.display = "none";
+    }
+
+    function dismissWelcomeAndFill() {
+        document.getElementById("welcomeGuide").style.display = "none";
+        autoFillAll();
+    }
+
+    // ---- 全部清空 ----
+
+    function clearAll() {
+        if (!confirm("确定要清空所有格子吗？此操作不可撤销。")) return;
+        for (let i = 0; i < texts.length; i++) {
+            cellImages[i] = null;
+            cellCrops[i] = null;
+            cellSubjectIDs[i] = null;
+            cellSwapOffsets[i] = 0;
+            renderCellImage(i);
+        }
+        updateProgressBar();
+        saveState();
+    }
+
+    // ---- 并发控制工具 ----
+
+    async function runWithConcurrency(taskFns, limit) {
+        let idx = 0;
+        async function worker() {
+            while (idx < taskFns.length) {
+                const i = idx++;
+                await taskFns[i]();
+            }
+        }
+        const workers = [];
+        for (let w = 0; w < Math.min(limit, taskFns.length); w++) {
+            workers.push(worker());
+        }
+        await Promise.all(workers);
+    }
+
+    // ---- 一键智能填充 ----
+
+    async function autoFillAll() {
+        const specs = [];
+        const indices = [];
+        const excludeIDs = [];
+        cellSubjectIDs.forEach(id => { if (id) excludeIDs.push(id); });
+        texts.forEach((label, i) => {
+            if (cellImages[i]) return;
+            const mapping = cellTagMap[label];
+            if (!mapping) return;
+            specs.push({
+                label, tags: mapping.tags || [],
+                sort: mapping.sort || "rank",
+                subjectType: mapping.type || "",
+                offset: 0,
+            });
+            indices.push(i);
+        });
+        if (specs.length === 0) { alert("所有格子都已填充！"); return; }
+
+        const overlay = document.getElementById("fillOverlay");
+        const barInner = document.getElementById("fillBarInner");
+        const fillText = document.getElementById("fillText");
+        const fillSub = document.getElementById("fillSub");
+        overlay.style.display = "flex";
+        barInner.style.width = "0%";
+        fillText.textContent = "正在为你挑选作品...";
+        fillSub.textContent = `0/${specs.length}`;
+
+        try {
+            const resp = await fetch("/api/recommend", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ cells: specs, excludeIDs }),
+            });
+            const data = await resp.json();
+            if (data.error) { alert("推荐获取失败: " + data.error); return; }
+
+            const results = data.results || [];
+            const validCount = results.filter(r => r.found && r.item && r.item.cover).length;
+            if (validCount === 0) {
+                fillSub.textContent = "没有找到推荐作品";
+                await new Promise(r => setTimeout(r, 1500));
+                return;
+            }
+
+            fillText.textContent = "正在下载封面...";
+            let completed = 0;
+
+            const tasks = results.map((result, ri) => async () => {
+                const cellIdx = indices[ri];
+                if (!result.found || !result.item || !result.item.cover) {
+                    completed++;
+                    barInner.style.width = Math.round(completed / results.length * 100) + "%";
+                    fillSub.textContent = `${completed}/${results.length}`;
+                    return;
+                }
+                try {
+                    const item = result.item;
+                    const displayName = item.name_cn || item.name || "cover";
+                    const safeName = displayName.replace(/[<>:"\/\\|?*\s]/g, "_").substring(0, 60);
+                    const dlResp = await fetch("/api/download-cover", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ url: item.cover, filename: `${safeName}_${item.id}`, source: "bgm" }),
+                    });
+                    const dlData = await dlResp.json();
+                    if (!dlData.error) {
+                        cellImages[cellIdx] = "covers/" + encodeURIComponent(dlData.filename);
+                        cellCrops[cellIdx] = defaultCrop();
+                        cellSubjectIDs[cellIdx] = item.id;
+                        renderCellImage(cellIdx, displayName);
+                    }
+                } catch (e) { console.warn("下载封面失败:", e); }
+                completed++;
+                barInner.style.width = Math.round(completed / results.length * 100) + "%";
+                fillSub.textContent = `${completed}/${results.length}`;
+            });
+
+            await runWithConcurrency(tasks, 4);
+        } catch (e) {
+            alert("智能填充出错: " + e.message);
+        } finally {
+            overlay.style.display = "none";
+            await loadCovers();
+            updateProgressBar();
+            saveState();
+        }
+    }
+
+    // ---- 格子浮窗推荐 ----
+
+    let _popoverIndex = -1;
+    let _popoverOffset = 0;
+    let _popoverItems = [];
+    const POPOVER_COUNT = 8;
+
+    function showPopover(index) {
+        _popoverIndex = index;
+        _popoverOffset = 0;
+        _popoverItems = [];
+        activeCellIndex = index;
+
+        const popover = document.getElementById("cellPopover");
+        const backdrop = document.getElementById("popoverBackdrop");
+        const title = document.getElementById("popoverTitle");
+        title.textContent = texts[index];
+
+        // 当前封面区域
+        const currentSection = document.getElementById("popoverCurrentSection");
+        if (cellImages[index]) {
+            currentSection.style.display = "";
+            document.getElementById("popoverCurrentImg").src = cellImages[index];
+            document.getElementById("popoverCurrentName").textContent = texts[index];
+        } else {
+            currentSection.style.display = "none";
+        }
+
+        // 定位
+        positionPopover(index);
+        backdrop.style.display = "";
+        popover.style.display = "";
+
+        // 加载推荐
+        loadPopoverRecommendations();
+    }
+
+    function hidePopover() {
+        document.getElementById("cellPopover").style.display = "none";
+        document.getElementById("popoverBackdrop").style.display = "none";
+        _popoverIndex = -1;
+    }
+
+    function positionPopover(index) {
+        const cell = document.querySelectorAll(".grid-cell")[index];
+        if (!cell) return;
+        const popover = document.getElementById("cellPopover");
+        const arrow = document.getElementById("popoverArrow");
+        const rect = cell.getBoundingClientRect();
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+
+        // 默认显示在格子右侧
+        let left = rect.right + scrollLeft + 12;
+        let top = rect.top + scrollTop;
+        let arrowSide = "left"; // 箭头在浮窗左侧
+
+        // 如果右侧空间不足，显示在左侧
+        const popoverWidth = 380;
+        if (rect.right + popoverWidth + 24 > window.innerWidth) {
+            left = rect.left + scrollLeft - popoverWidth - 12;
+            arrowSide = "right";
+        }
+
+        // 纵向居中对齐
+        const popoverHeight = Math.min(520, window.innerHeight * 0.8);
+        const idealTop = rect.top + scrollTop + rect.height / 2 - popoverHeight / 2;
+        top = Math.max(scrollTop + 8, Math.min(idealTop, scrollTop + window.innerHeight - popoverHeight - 8));
+
+        popover.style.left = left + "px";
+        popover.style.top = top + "px";
+
+        // 箭头位置
+        arrow.className = "popover-arrow popover-arrow-" + arrowSide;
+        const arrowTop = rect.top + scrollTop + rect.height / 2 - top;
+        arrow.style.top = Math.max(20, Math.min(arrowTop, popoverHeight - 20)) + "px";
+    }
+
+    async function loadPopoverRecommendations() {
+        const index = _popoverIndex;
+        if (index < 0) return;
+        const label = texts[index];
+        const mapping = cellTagMap[label];
+        if (!mapping) return;
+
+        const grid = document.getElementById("popoverGrid");
+        const moreBtn = document.getElementById("popoverMoreBtn");
+        grid.innerHTML = '<div class="popover-loading"><div class="spinner"></div></div>';
+
+        try {
+            const body = {
+                offset: _popoverOffset,
+                limit: POPOVER_COUNT + 4,
+                sort: mapping.sort || "heat",
+            };
+            if (mapping.tags && mapping.tags.length > 0) body.tags = mapping.tags;
+            if (mapping.type) body.subjectType = mapping.type;
+            if (!body.tags && !body.subjectType) body.subjectType = "anime";
+
+            const resp = await fetch("/api/browse", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
+            const data = await resp.json();
+            if (data.error) {
+                grid.innerHTML = '<div class="popover-loading">加载失败</div>';
+                return;
+            }
+
+            const items = data.results || [];
+            const usedIDs = new Set(cellSubjectIDs.filter(id => id != null));
+            const filtered = items.filter(item => !usedIDs.has(item.id)).slice(0, POPOVER_COUNT);
+            _popoverItems = filtered;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="popover-loading">暂无推荐</div>';
+                moreBtn.style.display = "none";
+                return;
+            }
+
+            grid.innerHTML = "";
+            filtered.forEach(item => {
+                const el = document.createElement("div");
+                el.className = "popover-item";
+                const name = item.name_cn || item.name || "";
+                const score = item.score ? `${item.score}` : "";
+                el.innerHTML = `
+                    ${item.cover ? `<img class="popover-item-img" src="${item.cover}" alt="${name}" loading="lazy" onerror="this.style.display='none'">` : `<div class="popover-item-img" style="display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">无图</div>`}
+                    <div class="popover-item-name" title="${name}">${name}</div>
+                    ${score ? `<div class="popover-item-score">⭐${score}</div>` : ""}
+                `;
+                el.onclick = () => popoverSelectItem(item);
+                grid.appendChild(el);
+            });
+            _popoverOffset += items.length;
+            moreBtn.style.display = items.length >= POPOVER_COUNT ? "" : "none";
+        } catch (e) {
+            grid.innerHTML = '<div class="popover-loading">加载失败</div>';
+        }
+    }
+
+    function popoverLoadMore() {
+        loadPopoverRecommendations();
+    }
+
+    async function popoverSelectItem(item) {
+        const index = _popoverIndex;
+        if (index < 0) return;
+
+        const grid = document.getElementById("popoverGrid");
+        grid.innerHTML = '<div class="popover-loading"><div class="spinner"></div></div>';
+
+        try {
+            const displayName = item.name_cn || item.name || "cover";
+            const safeName = displayName.replace(/[<>:"\/\\|?*\s]/g, "_").substring(0, 60);
+            const dlResp = await fetch("/api/download-cover", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url: item.cover, filename: `${safeName}_${item.id}`, source: "bgm" }),
+            });
+            const dlData = await dlResp.json();
+            if (dlData.error) {
+                alert("下载封面失败: " + dlData.error);
+                loadPopoverRecommendations();
+                return;
+            }
+
+            cellImages[index] = "covers/" + encodeURIComponent(dlData.filename);
+            cellCrops[index] = defaultCrop();
+            cellSubjectIDs[index] = item.id;
+            renderCellImage(index, displayName);
+            hidePopover();
+            await loadCovers();
+            updateProgressBar();
+            saveState();
+        } catch (e) {
+            alert("选择失败: " + e.message);
+            loadPopoverRecommendations();
+        }
+    }
+
+    function popoverOpenFullModal() {
+        const index = _popoverIndex;
+        hidePopover();
+        openCoverPicker(index);
+    }
+
+    function popoverCrop() {
+        const index = _popoverIndex;
+        if (index < 0 || !cellImages[index]) return;
+        hidePopover();
+        openCropModal(index);
+    }
+
+    function popoverClear() {
+        const index = _popoverIndex;
+        if (index < 0) return;
+        cellImages[index] = null;
+        cellCrops[index] = null;
+        cellSubjectIDs[index] = null;
+        cellSwapOffsets[index] = 0;
+        renderCellImage(index);
+        hidePopover();
+        saveState();
+        updateProgressBar();
+    }
+
+    // 窗口滚动/resize 时重新定位浮窗
+    window.addEventListener("scroll", () => {
+        if (_popoverIndex >= 0) positionPopover(_popoverIndex);
+    });
+    window.addEventListener("resize", () => {
+        if (_popoverIndex >= 0) positionPopover(_popoverIndex);
+    });
 
     // 启动流程：初始化网格、标签浏览器，再加载封面和状态。
     initGrid();
