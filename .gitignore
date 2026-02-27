@@ -5,6 +5,7 @@
 *.so
 *.dylib
 otaku-chart-maker
+otaku-chart-maker-*
 dist/
 
 # ── Runtime Data ────────────────────────────────
