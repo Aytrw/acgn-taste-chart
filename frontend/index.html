@@ -220,15 +220,22 @@
             position: relative;
             overflow: hidden;
             cursor: pointer;
-            border: 2px solid #ddd;
+            border: 2px solid #eee;
             aspect-ratio: 3/4;
-            border-radius: 4px;
-            transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+            border-radius: 6px;
+            transition: border-color 0.2s, box-shadow 0.2s, opacity 0.3s, transform 0.3s;
+        }
+        .cover-item.cover-entering {
+            opacity: 0;
+            transform: translateY(12px) scale(0.96);
+            animation: coverFadeIn 0.35s ease forwards;
+        }
+        @keyframes coverFadeIn {
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
         .cover-item:hover {
             border-color: #ea4c89;
-            box-shadow: 0 0 10px rgba(234,76,137,0.35);
-            transform: scale(1.03);
+            box-shadow: 0 4px 16px rgba(234,76,137,0.25);
             z-index: 1;
         }
         .cover-item img {
@@ -236,7 +243,112 @@
             height: 100%;
             object-fit: cover;
             image-rendering: auto;
+            transition: transform 0.3s ease;
         }
+        .cover-item:hover img {
+            transform: scale(1.06);
+        }
+        .cover-item-name {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            padding: 14px 4px 3px;
+            font-size: 9px;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background: linear-gradient(transparent, rgba(0,0,0,0.55));
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        .cover-item:hover .cover-item-name { opacity: 1; }
+        .cover-item-check {
+            position: absolute;
+            top: 4px; left: 4px;
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.7);
+            background: rgba(0,0,0,0.25);
+            color: #fff;
+            font-size: 14px;
+            line-height: 22px;
+            text-align: center;
+            cursor: pointer;
+            opacity: 0;
+            transform: scale(0.6);
+            transition: opacity 0.2s, transform 0.2s, background 0.15s, border-color 0.15s;
+            z-index: 2;
+        }
+        .cover-item.select-mode .cover-item-check {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .cover-item.selected .cover-item-check {
+            background: #ea4c89;
+            border-color: #ea4c89;
+        }
+        .cover-item.selected {
+            border-color: #ea4c89;
+            box-shadow: 0 0 0 2px rgba(234,76,137,0.3);
+        }
+        .cover-item.selected img {
+            filter: brightness(0.8);
+        }
+        .cover-item.removing {
+            animation: coverRemove 0.3s ease forwards;
+        }
+        @keyframes coverRemove {
+            to { opacity: 0; transform: scale(0.8) rotateZ(2deg); }
+        }
+        .cover-count-badge {
+            font-size: 11px;
+            color: #999;
+            margin-right: auto;
+            line-height: 28px;
+        }
+        .cover-batch-bar {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            margin-bottom: 6px;
+            background: #fff5f8;
+            border: 1.5px solid #f8bbd0;
+            border-radius: 8px;
+            animation: batchBarIn 0.25s ease;
+        }
+        .cover-batch-bar.visible { display: flex; }
+        @keyframes batchBarIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .cover-batch-bar .batch-info {
+            font-size: 12px;
+            color: #c2185b;
+            font-weight: bold;
+            margin-right: auto;
+        }
+        .cover-batch-btn {
+            padding: 4px 12px;
+            border: 1.5px solid #ddd;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 11px;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .cover-batch-btn:hover { border-color: #ea4c89; color: #ea4c89; }
+        .cover-batch-btn.danger {
+            border-color: #ff6b6b;
+            color: #fff;
+            background: #ff6b6b;
+        }
+        .cover-batch-btn.danger:hover { background: #ee4444; }
+        .cover-batch-btn.danger:disabled { opacity: 0.5; cursor: not-allowed; }
         .cover-modal-actions {
             display: flex;
             justify-content: center;
@@ -290,6 +402,7 @@
         .cover-tool-btn:hover { border-color: #ea4c89; color: #ea4c89; }
         .cover-tool-btn:active { background: #fce4ec; }
         .cover-tool-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .cover-tool-btn.active-danger { border-color: #ff6b6b; color: #ff6b6b; background: #fff0f0; }
 
         /* Tab 切换 */
         .modal-tabs {
@@ -383,6 +496,7 @@
             overflow: hidden;
             transition: border-color 0.15s, box-shadow 0.15s;
             background: #fff;
+            position: relative;
         }
         .search-item:hover {
             border-color: #ea4c89;
@@ -503,16 +617,16 @@
         .search-item-meta {
             display: flex;
             align-items: center;
-            gap: 3px;
+            justify-content: space-between;
             padding: 1px 4px 3px;
         }
         .search-item-type {
-            font-size: 10px;
-            padding: 1px 6px;
+            font-size: 9px;
+            padding: 1px 4px;
             border-radius: 3px;
             font-weight: bold;
-            background: #e3f2fd;
-            color: #1565c0;
+            line-height: 1.4;
+            white-space: nowrap;
         }
         .search-item-type.type-anime { background: #e3f2fd; color: #1565c0; }
         .search-item-type.type-game  { background: #fce4ec; color: #c62828; }
@@ -522,16 +636,24 @@
             font-size: 10px;
             color: #ff9800;
             font-weight: bold;
+            white-space: nowrap;
         }
-        /* 来源徽章 */
-        .source-badge {
-            font-size: 10px;
-            padding: 1px 6px;
+        .search-item-rank {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 9px;
+            padding: 1px 5px;
             border-radius: 3px;
             font-weight: bold;
+            line-height: 1.4;
+            color: #fff;
         }
-        .source-badge.source-bgm  { background: #e8f0fe; color: #3b6ece; }
-        .source-badge.source-vndb { background: #f3e5f5; color: #7b1fa2; }
+        .search-item-rank.rank-anime { background: rgba(21,101,192,0.75); }
+        .search-item-rank.rank-game  { background: rgba(198,40,40,0.75); }
+        .search-item-rank.rank-manga { background: rgba(230,81,0,0.75); }
+        .search-item-rank.rank-novel { background: rgba(123,31,162,0.75); }
+        .search-item-rank.rank-default { background: rgba(0,0,0,0.55); color: #ffd740; }
         .load-more-wrapper {
             text-align: center;
             padding: 16px 0;
@@ -1561,6 +1683,10 @@
             color: #ff9800;
             font-weight: bold;
         }
+        .drawer-rec-rank {
+            font-size: 10px;
+            color: #999;
+        }
         .drawer-rec-type {
             font-size: 10px;
             padding: 2px 6px;
@@ -1733,7 +1859,7 @@
                 <button class="quick-search-btn" id="quickSearchBtn" onclick="doQuickSearch()">搜索</button>
             </div>
             <div class="quick-search-results" id="quickSearchResults">
-                <div class="quick-search-hint">输入关键词搜索，或点击下方「推荐」浏览热门作品</div>
+                <div class="quick-search-hint">不知道填什么？点击下方「推荐」浏览热门作品</div>
             </div>
         </div>
         <div class="quick-search-footer">
@@ -1792,8 +1918,15 @@
             <!-- 已有封面 -->
             <div class="tab-panel active" id="tabCovers">
                 <div class="cover-toolbar">
+                    <span class="cover-count-badge" id="coverCountBadge"></span>
+                    <button class="cover-tool-btn" id="coverDeleteToggle" onclick="toggleSelectMode()" title="进入管理模式，可批量删除封面">🗑️ 管理</button>
                     <button class="cover-tool-btn" onclick="triggerUploadCover()" title="从本地导入图片到 covers 目录">📂 导入封面</button>
                     <button class="cover-tool-btn" onclick="refreshCovers()" title="刷新 covers 目录（拖入新文件后点击）">🔄 刷新</button>
+                </div>
+                <div class="cover-batch-bar" id="coverBatchBar">
+                    <span class="batch-info" id="batchInfo">已选 0 张</span>
+                    <button class="cover-batch-btn" onclick="selectAllCovers()" id="selectAllBtn">☐ 全选</button>
+                    <button class="cover-batch-btn danger" onclick="batchDeleteCovers()" id="batchDeleteBtn" disabled>🗑️ 删除选中</button>
                 </div>
                 <input type="file" id="uploadCoverInput" accept="image/*" multiple style="display:none" onchange="handleUploadFiles(this.files)">
                 <div class="cover-grid" id="coverGrid"></div>
@@ -2255,20 +2388,143 @@
         renderCoverGrid();
     }
 
+    let _deleteMode = false; // 封面管理模式
+    let _selectedCovers = new Set(); // 已选中的封面文件名
+
+    // toggleSelectMode 切换封面选择管理模式。
+    function toggleSelectMode() {
+        _deleteMode = !_deleteMode;
+        _selectedCovers.clear();
+        const btn = document.getElementById("coverDeleteToggle");
+        btn.classList.toggle("active-danger", _deleteMode);
+        btn.textContent = _deleteMode ? "✖ 完成" : "🗑️ 管理";
+        document.getElementById("coverBatchBar").classList.toggle("visible", _deleteMode);
+        updateBatchInfo();
+        document.querySelectorAll(".cover-item").forEach(el => {
+            el.classList.toggle("select-mode", _deleteMode);
+            el.classList.remove("selected");
+        });
+    }
+
+    // toggleCoverSelect 切换单张封面的选中状态。
+    function toggleCoverSelect(name, el) {
+        if (_selectedCovers.has(name)) {
+            _selectedCovers.delete(name);
+            el.classList.remove("selected");
+        } else {
+            _selectedCovers.add(name);
+            el.classList.add("selected");
+        }
+        updateBatchInfo();
+    }
+
+    // selectAllCovers 全选/取消全选封面。
+    function selectAllCovers() {
+        const allSelected = _selectedCovers.size === coverUrls.length;
+        document.querySelectorAll(".cover-item").forEach(el => {
+            const name = el.dataset.name;
+            if (allSelected) {
+                _selectedCovers.delete(name);
+                el.classList.remove("selected");
+            } else {
+                _selectedCovers.add(name);
+                el.classList.add("selected");
+            }
+        });
+        updateBatchInfo();
+    }
+
+    // updateBatchInfo 更新批量操作栏的选中数量和按钮状态。
+    function updateBatchInfo() {
+        const n = _selectedCovers.size;
+        document.getElementById("batchInfo").textContent = `已选 ${n} 张`;
+        document.getElementById("batchDeleteBtn").disabled = n === 0;
+        const allSelected = coverUrls.length > 0 && n === coverUrls.length;
+        document.getElementById("selectAllBtn").textContent = allSelected ? "☑ 取消全选" : "☐ 全选";
+    }
+
+    // batchDeleteCovers 批量删除选中的封面，带交错移除动画后平滑回流。
+    async function batchDeleteCovers() {
+        const names = [..._selectedCovers];
+        if (names.length === 0) return;
+        if (!confirm(`确定删除选中的 ${names.length} 张封面？此操作不可撤销。`)) return;
+
+        // 禁用按钮防止重复操作
+        document.getElementById("batchDeleteBtn").disabled = true;
+
+        // 交错播放移除动画
+        const items = document.querySelectorAll(".cover-item.selected");
+        items.forEach((el, i) => {
+            el.style.animationDelay = `${i * 40}ms`;
+            el.classList.add("removing");
+        });
+        const animDuration = Math.min(items.length * 40 + 300, 1200);
+        await new Promise(r => setTimeout(r, animDuration));
+
+        // 发起删除请求
+        try {
+            const resp = await fetch("/api/delete-cover", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ filenames: names }),
+            });
+            const data = await resp.json();
+            if (data.error) { alert("删除失败: " + data.error); }
+        } catch (e) {
+            alert("删除出错: " + e.message);
+        }
+
+        // 直接从 DOM 移除已删除卡片，避免重建整个网格引起卡顿
+        items.forEach(el => el.remove());
+        _selectedCovers.clear();
+        coverUrls = coverUrls.filter(c => !names.includes(c.name));
+
+        // 更新数量角标和批量栏
+        const badge = document.getElementById("coverCountBadge");
+        if (badge) badge.textContent = coverUrls.length > 0 ? `共 ${coverUrls.length} 张` : "";
+        updateBatchInfo();
+
+        // 空状态提示
+        if (coverUrls.length === 0) {
+            const grid = document.getElementById("coverGrid");
+            if (grid) grid.innerHTML = `<div class="no-covers-msg">covers 文件夹中没有找到图片<br>点击「导入封面」上传本地图片，或切换到搜索 Tab 在线搜索</div>`;
+        }
+    }
+
     // renderCoverGrid 渲染弹窗内的已有封面网格。
     function renderCoverGrid() {
         const grid = document.getElementById("coverGrid");
         if (!grid) return;
         grid.innerHTML = "";
+
+        // 更新封面数量角标
+        const badge = document.getElementById("coverCountBadge");
+        if (badge) badge.textContent = coverUrls.length > 0 ? `共 ${coverUrls.length} 张` : "";
+
         if (coverUrls.length === 0) {
-            grid.innerHTML = `<div class="no-covers-msg">covers 文件夹中没有找到图片<br>点击「导入封面」上传本地图片，或切换到 Bangumi / VNDB Tab 在线搜索</div>`;
+            grid.innerHTML = `<div class="no-covers-msg">covers 文件夹中没有找到图片<br>点击「导入封面」上传本地图片，或切换到搜索 Tab 在线搜索</div>`;
             return;
         }
-        coverUrls.forEach(({ name, url }) => {
+        coverUrls.forEach(({ name, url }, i) => {
             const item = document.createElement("div");
-            item.className = "cover-item";
-            item.innerHTML = `<img src="${url}" alt="${name}" title="${name}">`;
-            item.onclick = (e) => { e.stopPropagation(); selectCover(url, name); };
+            item.className = "cover-item cover-entering" + (_deleteMode ? " select-mode" : "") + (_selectedCovers.has(name) ? " selected" : "");
+            item.dataset.name = name;
+            item.style.animationDelay = `${i * 30}ms`;
+            item.innerHTML = `
+                <img src="${url}" alt="${name}" loading="lazy">
+                <div class="cover-item-name" title="${name}">${name}</div>
+                <div class="cover-item-check">✓</div>
+            `;
+            // 入场动画结束后移除 entering 类，避免影响后续 transition
+            item.addEventListener("animationend", () => item.classList.remove("cover-entering"), { once: true });
+            item.onclick = (e) => {
+                e.stopPropagation();
+                if (_deleteMode) {
+                    toggleCoverSelect(name, item);
+                } else {
+                    selectCover(url, name);
+                }
+            };
             grid.appendChild(item);
         });
     }
@@ -2322,6 +2578,13 @@
         activeCellIndex = index;
         const grid = document.getElementById("coverGrid");
         document.getElementById("modalTitle").textContent = `为「${texts[index]}」选择封面`;
+
+        // 重置删除模式
+        _deleteMode = false;
+        _selectedCovers.clear();
+        const delBtn = document.getElementById("coverDeleteToggle");
+        if (delBtn) { delBtn.classList.remove("active-danger"); delBtn.textContent = "🗑️ 管理"; }
+        document.getElementById("coverBatchBar").classList.remove("visible");
 
         // 渲染已有封面列表
         renderCoverGrid();
@@ -2853,6 +3116,12 @@
                             : typeLabel === "漫画" ? "type-manga"
                             : typeLabel === "小说" ? "type-novel" : "";
             const score = item.score ? `⭐${item.score}` : "";
+            const isRankSort = document.getElementById("sortSelect").value === "rank";
+            const rankClass = typeLabel === "动画" ? "rank-anime"
+                            : typeLabel === "游戏" ? "rank-game"
+                            : typeLabel === "漫画" ? "rank-manga"
+                            : typeLabel === "小说" ? "rank-novel" : "rank-default";
+            const rank = (isRankSort && item.rank) ? `#${item.rank}` : "";
 
             el.innerHTML = `
                 ${coverSrc
@@ -2860,12 +3129,12 @@
                            onerror="this.style.display='none'">`
                     : `<div class="search-item-img" style="display:flex;align-items:center;justify-content:center;color:#ccc;font-size:24px;">无图</div>`
                 }
+                ${rank ? `<span class="search-item-rank ${rankClass}">${rank}</span>` : ""}
                 <div class="search-item-info">
                     <div class="search-item-name" title="${displayName}">${displayName}</div>
                     ${subName ? `<div class="search-item-sub" title="${subName}">${subName}</div>` : ""}
                 </div>
                 <div class="search-item-meta">
-                    <span class="source-badge source-bgm">BGM</span>
                     ${typeLabel ? `<span class="search-item-type ${typeClass}">${typeLabel}</span>` : ""}
                     ${score ? `<span class="search-item-score">${score}</span>` : ""}
                 </div>
@@ -3114,7 +3383,6 @@
                     ${subName ? `<div class="search-item-sub" title="${subName}">${subName}</div>` : ""}
                 </div>
                 <div class="search-item-meta">
-                    <span class="source-badge source-vndb">VNDB</span>
                     ${score ? `<span class="search-item-score">${score}</span>` : ""}
                 </div>
             `;
@@ -3660,6 +3928,7 @@
                 
                 const name = escapeHtml(item.name_cn || item.name || "");
                 const score = item.score ? `⭐${item.score}` : "";
+                const rank = item.rank ? `#${item.rank}` : "";
                 const typeLabel = item.type_label || "";
                 
                 el.innerHTML = `
@@ -3671,6 +3940,7 @@
                         <div class="drawer-rec-name" title="${name}">${name}</div>
                         <div class="drawer-rec-meta">
                             ${score ? `<span class="drawer-rec-score">${score}</span>` : ""}
+                            ${rank ? `<span class="drawer-rec-rank">${rank}</span>` : ""}
                             ${typeLabel ? `<span class="drawer-rec-type">${escapeHtml(typeLabel)}</span>` : ""}
                         </div>
                     </div>
@@ -3828,7 +4098,7 @@
         
         title.textContent = texts[index];
         input.value = "";
-        results.innerHTML = '<div class="quick-search-hint">输入关键词搜索，或点击下方「推荐」浏览热门作品</div>';
+        results.innerHTML = '<div class="quick-search-hint">不知道填什么？点击下方「推荐」浏览热门作品</div>';
         refreshBtn.style.display = "none";
         
         document.querySelectorAll(".grid-cell").forEach((c, i) => {
