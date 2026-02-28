@@ -19,14 +19,16 @@ import (
 
 // Bangumi API 地址和请求参数。
 const (
-	bgmUserAgent    = "OtakuChartMaker/1.0 (https://github.com/Aytrw/otaku-chart-maker)"
-	bgmV0SearchURL  = "https://api.bgm.tv/v0/search/subjects"
-	bgmLegacyURL    = "https://api.bgm.tv/search/subject/"
-	cacheTTL        = 5 * time.Minute
-	cacheCleanTick  = 1 * time.Minute
-	cacheMaxEntries = 800
-	defaultLimit    = 20
-	maxBrowseLimit  = 100
+	bgmUserAgent     = "OtakuChartMaker/1.0 (https://github.com/Aytrw/otaku-chart-maker)"
+	bgmV0SearchURL   = "https://api.bgm.tv/v0/search/subjects"
+	bgmV0SubjectURL  = "https://api.bgm.tv/v0/subjects/"
+	bgmLegacyURL     = "https://api.bgm.tv/search/subject/"
+	cacheTTL         = 5 * time.Minute
+	cacheCleanTick   = 1 * time.Minute
+	cacheMaxEntries  = 800
+	defaultLimit     = 20
+	maxBrowseLimit   = 100
+	summaryMaxWorker = 6 // 并发拉取简介的最大协程数
 )
 
 // ErrBadRequest 表示调用参数无效，应返回 4xx。
@@ -173,7 +175,7 @@ func (c *Client) Search(keyword string, bgmType int) ([]SearchResult, error) {
 			Name:    it.Name,
 			NameCN:  it.NameCN,
 			Cover:   it.Images.bestURL(),
-			Summary: truncateRunes(it.Summary, 80),
+			Summary: truncateRunes(it.Summary, 300),
 		})
 	}
 	return results, nil
@@ -303,7 +305,7 @@ func (c *Client) Browse(req BrowseRequest) (*BrowseResponse, error) {
 			Cover:     it.Images.bestURL(),
 			TypeLabel: label,
 			Score:     it.Score,
-			Summary:   truncateRunes(it.Summary, 80),
+			Summary:   truncateRunes(it.Summary, 300),
 		})
 	}
 
@@ -312,12 +314,53 @@ func (c *Client) Browse(req BrowseRequest) (*BrowseResponse, error) {
 		results = results[:req.Limit]
 	}
 
+	// 并发填充简介（v0 搜索接口不返回 summary，需单独请求条目详情）
+	c.enrichSummaries(results)
+
 	return &BrowseResponse{
 		Results: results,
 		Total:   raw.Total,
 		Offset:  req.Offset,
 		Limit:   req.Limit,
 	}, nil
+}
+
+// enrichSummaries 并发请求 v0 条目详情接口，为缺少简介的结果补充 summary。
+func (c *Client) enrichSummaries(results []BrowseResult) {
+	// 收集需要补充简介的索引
+	type job struct{ idx, id int }
+	var jobs []job
+	for i, r := range results {
+		if r.Summary == "" && r.ID > 0 {
+			jobs = append(jobs, job{idx: i, id: r.ID})
+		}
+	}
+	if len(jobs) == 0 {
+		return
+	}
+
+	// 有限并发：使用 semaphore channel 控制同时在途请求数
+	sem := make(chan struct{}, summaryMaxWorker)
+	var wg sync.WaitGroup
+	for _, j := range jobs {
+		wg.Add(1)
+		sem <- struct{}{}
+		go func(idx, id int) {
+			defer func() { <-sem; wg.Done() }()
+			url := fmt.Sprintf("%s%d", bgmV0SubjectURL, id)
+			data, err := c.cachedGet(url)
+			if err != nil {
+				return
+			}
+			var subj struct {
+				Summary string `json:"summary"`
+			}
+			if json.Unmarshal(data, &subj) == nil && subj.Summary != "" {
+				results[idx].Summary = truncateRunes(subj.Summary, 300)
+			}
+		}(j.idx, j.id)
+	}
+	wg.Wait()
 }
 
 // ---- 封面下载 ----
@@ -475,6 +518,36 @@ func (c *Client) cachedPost(apiURL string, body any) ([]byte, error) {
 
 	// 请求 API 并写入缓存
 	result, err := c.bgmPost(apiURL, bodyJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	cachedAt := time.Now()
+	c.mu.Lock()
+	c.cache[key] = cacheEntry{data: result, expire: cachedAt.Add(cacheTTL), added: cachedAt}
+	c.pruneExpiredLocked(cachedAt)
+	c.evictOverflowLocked()
+	c.mu.Unlock()
+
+	return result, nil
+}
+
+// cachedGet 带缓存的 GET 请求（用于获取单个条目详情等）。
+func (c *Client) cachedGet(apiURL string) ([]byte, error) {
+	key := makeCacheKey(apiURL, nil)
+
+	now := time.Now()
+	c.mu.Lock()
+	if entry, ok := c.cache[key]; ok {
+		if now.Before(entry.expire) {
+			c.mu.Unlock()
+			return entry.data, nil
+		}
+		delete(c.cache, key)
+	}
+	c.mu.Unlock()
+
+	result, err := c.bgmGet(apiURL)
 	if err != nil {
 		return nil, err
 	}
