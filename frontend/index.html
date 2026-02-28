@@ -3680,7 +3680,9 @@
             });
             
             _drawerOffset += items.length;
-            moreBtn.style.display = items.length >= DRAWER_COUNT ? "" : "none";
+            // 原始结果不足请求数或过滤后无有效项时隐藏“换一批”
+            const hasMore = items.length >= DRAWER_COUNT && filtered.length > 0;
+            moreBtn.style.display = hasMore ? "" : "none";
         } catch (e) {
             if (index !== _drawerIndex) return;
             grid.innerHTML = `
@@ -4073,7 +4075,8 @@
             _quickSearchItems = filtered;
             _quickSearchOffset += items.length;
             renderQuickSearchResults(filtered);
-            refreshBtn.style.display = "";
+            // 原始结果不足请求数说明已触底，隐藏“换一批”
+            refreshBtn.style.display = items.length >= 12 ? "" : "none";
         } catch (e) {
             if (version !== _quickSearchVersion) return;
             results.innerHTML = '<div class="quick-search-empty">⚠️ 网络错误</div>';
